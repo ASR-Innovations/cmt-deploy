@@ -1,0 +1,551 @@
+
+<% layout('layout') -%>
+
+<!-- <% if (typeof course === 'undefined') { %>
+    <p>Debug: Course is undefined</p>
+<% } else { %>
+    <p>Debug: Course is defined</p>
+<% } %> -->
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-light">
+          <li class="breadcrumb-item"><a href="/" class="text-primary">Home</a></li>
+          <li class="breadcrumb-item"><a href="/cours" class="text-primary">Courses</a></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= avis[0].CodeCours %></li>
+        </ol>
+      </nav>
+
+    <h1 class="mb-4"><strong><span id="coursID" class="text-primary"><%= avis[0].CodeCours %></span></strong> - <span class="text-secondary"><%= avis[0].NomCours %></span></h1>
+    <p><a href="http://www3.essec.fr/banner.nsf/urlCours/<%= avis[0].CodeCours%>" target="_blank" class="text-primary">Voir le syllabus</a></p>
+  
+    <div class="row mb-5">
+    <div class="col-md-3 text-center mb-3">
+      <div class="essec-stat-card">
+        <h6 class="text-muted mb-2">Note du cours</h6>
+        <span id="moyenneCours" class="essec-stat">**</span><span class="text-muted">/10</span>
+      </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+      <div class="essec-stat-card">
+        <h6 class="text-muted mb-2">Pédagogie des profs</h6>
+        <span id="moyenneProfs" class="essec-stat">**</span><span class="text-muted">/10</span>
+      </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+      <div class="essec-stat-card" id="pointsMisesCard">
+        <h6 class="text-muted mb-2">Moyenne points misés</h6>
+        <span id="moyennePointsMises" class="essec-stat">**</span>
+      </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+      <div class="essec-stat-card">
+        <h6 class="text-muted mb-2">Nombre d'avis</h6>
+        <span id="nbTotalAvis" class="essec-stat">**</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="course-rating-bar mb-4">
+    <div id="ratingBar" class="rating-bar-inner"></div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-md-6">
+      <button type="button" class="btn btn-primary essec-btn" data-toggle="modal" data-target="#detailNotes">
+        Voir le détail des notes
+      </button>
+    </div>
+  </div>
+
+  <div class="essec-card mb-5">
+    <h3 class="essec-card-header">Ajouter un commentaire</h3>
+    <div class="essec-card-body">
+      <form id="newCommentForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+              <label for="professorSearch">Professeur</label>
+              <input type="text" id="professorSearch" class="form-control" placeholder="Rechercher un professeur">
+              <div id="professorDropdown" class="dropdown-menu"></div>
+              <select id="selectedProfessors" name="professor" multiple style="display: none;"></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="courseRating">Note du cours</label>
+              <select name="courseRating" class="form-control" required>
+                <option value="">Sélectionnez une note</option>
+                <% for(let i = 0; i <= 10; i++) { %>
+                  <option value="<%= i %>"><%= i %></option>
+                <% } %>
+              </select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="professorRating">Note du professeur</label>
+              <select name="professorRating" class="form-control" required>
+                <option value="">Sélectionnez une note</option>
+                <% for(let i = 0; i <= 10; i++) { %>
+                  <option value="<%= i %>"><%= i %></option>
+                <% } %>
+              </select>
+            </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="dayOfClass">Jour du cours</label>
+            <select name="dayOfClass" class="form-control essec-select" required>
+              <option value="Monday">Lundi</option>
+              <option value="Tuesday">Mardi</option>
+              <option value="Wednesday">Mercredi</option>
+              <option value="Thursday">Jeudi</option>
+              <option value="Friday">Vendredi</option>
+            </select>
+          </div>
+          <div class="form-group col-md-4">
+            <label for="pointsSpent">Points à dépenser (Max : ) <span id="userPoints"></span>)</label>
+            <input type="number" class="form-control" id="pointsSpent" name="pointsSpent" min="1" max="140" required>
+          </div>
+          <div class="form-group col-md-4">
+            <label for="trimester">Trimestre</label>
+            <select name="trimester" class="form-control essec-select" required>
+              <option value="T1">T1</option>
+              <option value="T2">T2</option>
+              <option value="T3">T3</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="comment">Commentaire</label>
+          <textarea name="comment" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary essec-btn">Soumettre le commentaire</button>
+      </form>
+    </div>
+  </div>
+
+  <h3 class="mb-4 essec-heading">Commentaires des étudiants</h3>
+  <% for(var i=0; i< avis.length; i++){ %>
+    <% var datePubli = new Date(avis[i].DatePubli) %>
+    <div class="essec-card mb-4">
+      <div class="essec-card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <h5 class="essec-subheading">Commentaire sur le cours</h5>
+            <p class="mb-4"><%= avis[i].CommentCours %></p>
+            <h5 class="essec-subheading">Commentaire sur le prof</h5>
+            <p><%= avis[i].CommentProf %></p>
+          </div>
+          <div class="col-md-4">
+            <ul class="list-unstyled essec-details">
+              <li><strong>Professeur :</strong> 
+                <% for(var j=0; j<avis[i].Professeur.length; j++){ %>
+                  <a href="/prof/<%=avis[i].Professeur[j]%>/avis" class="essec-link"><%=avis[i].Professeur[j]%></a>
+                <%}%>
+              </li>
+              <li><strong>Note Cours :</strong> <%= avis[i].NoteCours %>/10</li>
+              <li><strong>Note Professeur :</strong> <%= avis[i].NoteProf %>/10</li>
+              <li><strong>Jour :</strong> <%= avis[i].Jour %></li>
+              <li><strong>Heure :</strong> <%= avis[i].Heure %></li>
+              <li><strong>Tour :</strong> <%= avis[i].Tour %></li>
+              <li><strong>Points Misés :</strong> <%= avis[i].PointMises %></li>
+              <li><strong>Trimestre :</strong> <%= avis[i].Timestre %></li>
+              <li><strong>Année :</strong> <%= avis[i].Annee %> (<%= avis[i].BDE %>)</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-muted text-right mb-0">Avis donné le <%= datePubli.toLocaleDateString() %> à <%= datePubli.toLocaleTimeString() %></p>
+      </div>
+    </div>
+  <% } %> 
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="detailNotes" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header essec-modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Notes des professeurs pour <%= avis[0].NomCours %></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-striped">
+          <thead class="essec-table-header">
+            <tr>
+              <th scope="col">Professeur</th>
+              <th scope="col">Moyenne Note Cours</th>
+              <th scope="col">Moyenne note profs</th>
+              <th scope="col">Moyenne points misés</th>
+              <th scope="col">Nombre total d'avis</th>
+            </tr>
+          </thead>
+          <tbody id="notesProfs">
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --essec-blue: #1d9edd;
+    --essec-light-blue: #e6f3fa;
+    --essec-dark-blue: #0f4c6a;
+  }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  .essec-heading {
+    color: var(--essec-dark-blue);
+    font-weight: 600;
+    border-bottom: 2px solid var(--essec-blue);
+    padding-bottom: 0.5rem;
+  }
+
+  .essec-subheading {
+    color: var(--essec-blue);
+    font-weight: 600;
+  }
+
+  .points-color-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin: 10px auto;
+}
+
+  .essec-link {
+    color: var(--essec-blue);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .essec-link:hover {
+    color: var(--essec-dark-blue);
+    text-decoration: underline;
+  }
+
+  .essec-btn {
+    background-color: var(--essec-blue);
+    border-color: var(--essec-blue);
+    transition: background-color 0.3s ease;
+  }
+
+  .essec-btn:hover {
+    background-color: var(--essec-dark-blue);
+    border-color: var(--essec-dark-blue);
+  }
+
+  .essec-stat-card {
+    background-color: var(--essec-light-blue);
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+  }
+
+  .essec-stat {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--essec-blue);
+  }
+
+  .essec-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .essec-card-header {
+    background-color: var(--essec-blue);
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+  }
+
+  .essec-card-body {
+    padding: 1.5rem;
+  }
+
+  .essec-select {
+    border-color: #ced4da;
+    border-radius: 4px;
+  }
+  .essec-stat-card {
+    background-color: var(--essec-light-blue);
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.essec-stat {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--essec-blue);
+    transition: color 0.3s ease;
+}
+
+  .essec-details li {
+    margin-bottom: 0.5rem;
+  }
+
+  .essec-modal-header {
+    background-color: var(--essec-blue);
+    color: white;
+  }
+
+  .essec-table-header {
+    background-color: var(--essec-blue);
+    color: white;
+  }
+
+  .course-rating-bar {
+    background-color: #e9ecef;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .rating-bar-inner {
+    height: 100%;
+    transition: width 0.5s ease-in-out;
+  }
+</style>
+
+      
+
+
+<!-- <% if (typeof averagePoints !== 'undefined') { %>
+    updateRatingBar(<%= averagePoints %>);
+<% } else { %>
+    console.log('Average points not available');
+<% } %> -->
+
+<script>  
+
+
+// let allProfessors = JSON.stringify(allProfs || [])
+
+// document.getElementById('professorSearch').addEventListener('input', function(e) {
+//   let searchTerm = e.target.value.toLowerCase();
+//   let matchingProfs = allProfessors.filter(prof => 
+//     prof._id.toLowerCase().includes(searchTerm)
+//   );
+//   displayProfessors(matchingProfs);
+// });
+
+// function displayProfessors(professors) {
+//   let dropdown = document.getElementById('professorDropdown');
+//   dropdown.innerHTML = '';
+//   professors.forEach(prof => {
+//     let item = document.createElement('a');
+//     item.classList.add('dropdown-item');
+//     item.href = '#';
+//     item.textContent = prof._id;
+//     item.addEventListener('click', function(e) {
+//       e.preventDefault();
+//       selectProfessor(prof._id);
+//     });
+//     dropdown.appendChild(item);
+//   });
+//   dropdown.style.display = professors.length ? 'block' : 'none';
+// }
+
+// function selectProfessor(profId) {
+//   let select = document.getElementById('selectedProfessors');
+//   let option = Array.from(select.options).find(opt => opt.value === profId);
+//   if (option) {
+//     option.selected = !option.selected;
+//   } else {
+//     option = new Option(profId, profId, false, true);
+//     select.add(option);
+//   }
+//   updateSearchInput();
+// }
+
+// function updateSearchInput() {
+//   let select = document.getElementById('selectedProfessors');
+//   let search = document.getElementById('professorSearch');
+//   search.value = Array.from(select.selectedOptions).map(opt => opt.text).join(', ');
+// }
+
+// // Initialize dropdown with all professors
+// displayProfessors(allProfessors);
+
+
+// Fetch user's points
+fetch('/user/points')
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('userPoints').textContent = data.points;
+      document.getElementById('pointsSpent').max = data.points;
+    });
+
+function updateRatingBar(averagePoints) {
+        const bar = document.getElementById('ratingBar');
+        if (bar) {
+            let color;
+            if (averagePoints < 30) color = 'green';
+            else if (averagePoints < 70) color = 'yellow';
+            else color = 'red';
+            bar.style.backgroundColor = color;
+            bar.style.width = `${(averagePoints / 140) * 100}%`;
+        }
+    }
+
+    document.getElementById('newCommentForm').addEventListener('submit', function(e) {
+    const pointsSpent = parseInt(document.getElementById('pointsSpent').value);
+    const maxPoints = parseInt(document.getElementById('userPoints').textContent);
+    
+    if (pointsSpent > maxPoints) {
+      e.preventDefault();
+      alert('You cannot spend more points than you have available.');
+    }
+  });
+
+  // Update max attribute of pointsSpent input when userPoints is updated
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === "childList") {
+        document.getElementById('pointsSpent').max = mutation.target.textContent;
+      }
+    });
+  });
+
+  const userPointsSpan = document.getElementById('userPoints');
+  observer.observe(userPointsSpan, { childList: true });
+
+   
+
+    document.getElementById('newCommentForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const pointsSpent = formData.get('pointsSpent');
+
+  // First, submit the comment
+  fetch('/avis/create', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Then, update the user's points
+    return fetch('/user/' + userBannerID + '/update-points', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ bannerID: userBannerID, pointsSpent: pointsSpent }),
+    });
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Update the points displayed in the header
+    document.getElementById('userPoints').textContent = data.points;
+    // Optionally, display a success message or refresh the comments
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+});
+    var coursID = document.getElementById("coursID").innerHTML;
+
+    socket.emit('requestOverallRates', coursID);
+
+    socket.on('responseOverallRates', function(overallRates){
+      console.log("Received overallRates:", overallRates); // Log the received data
+
+      if (!overallRates || overallRates.length === 0) {
+        console.error("No data received for overallRates");
+        return;
+    }
+    var moyenneProfs = 0;
+    var moyenneCours = 0;
+    var moyennePointsMises = 0;
+    var nbTotalAvis = 0;
+    var nbProfs = overallRates.length;
+
+    for (var i = 0; i < nbProfs; i++) {
+        if (overallRates[i].moyenneProf != null && overallRates[i].moyenneCours != null && 
+            overallRates[i].moyennePointsMises != null && overallRates[i].nbAvis != null) {
+            moyenneProfs += overallRates[i].moyenneProf * overallRates[i].nbAvis;
+            moyenneCours += overallRates[i].moyenneCours * overallRates[i].nbAvis;
+            moyennePointsMises += overallRates[i].moyennePointsMises * overallRates[i].nbAvis;
+            nbTotalAvis += overallRates[i].nbAvis;
+        } else {
+            console.error("Invalid data in overallRates at index", i, overallRates[i]);
+        }
+    }
+
+     if (nbTotalAvis > 0) {
+        moyenneProfs = moyenneProfs / nbTotalAvis;
+        moyenneCours = moyenneCours / nbTotalAvis;
+        moyennePointsMises = moyennePointsMises / nbTotalAvis;
+
+        document.getElementById("moyenneCours").innerHTML = (Math.trunc(moyenneCours * 10) / 10).toFixed(1);
+        document.getElementById("moyenneProfs").innerHTML = (Math.trunc(moyenneProfs * 10) / 10).toFixed(1);
+        // Update the Moyenne points misés value and apply color scheme
+        var moyennePointsMisesElement = document.getElementById("moyennePointsMises");
+        var pointsMisesCard = document.getElementById("pointsMisesCard");
+        var formattedValue = (Math.trunc(moyennePointsMises * 10) / 10).toFixed(1);
+        moyennePointsMisesElement.innerHTML = formattedValue;
+
+        if (moyennePointsMises >= 30) {
+            pointsMisesCard.style.backgroundColor = "#ff8282";
+            moyennePointsMisesElement.style.color = "white";
+        } else if (moyennePointsMises >= 16) {
+            pointsMisesCard.style.backgroundColor = "#fcd78b";
+            moyennePointsMisesElement.style.color = "white";
+        } else {
+            pointsMisesCard.style.backgroundColor = "#8efaba";
+            moyennePointsMisesElement.style.color = "white";
+        }
+
+        document.getElementById("nbTotalAvis").innerHTML = nbTotalAvis;
+    } else {
+        console.error("No valid data to calculate averages");
+    }
+
+        const rates = {
+            moyenneProfs : moyenneProfs,
+            moyenneCours : moyenneCours,
+            moyennePointsMises : moyennePointsMises,
+            nbTotalAvis : nbTotalAvis
+        }
+
+//         document.getElementById("moyenneCours").innerHTML = Math.trunc(moyenneCours * 10) / 10 ;
+// document.getElementById("moyenneProfs").innerHTML = Math.trunc(moyenneProfs * 10) / 10 ;
+// document.getElementById("moyennePointsMises").innerHTML = Math.trunc(moyennePointsMises * 10) / 10 ;
+// document.getElementById("nbTotalAvis").innerHTML = nbTotalAvis;
+
+        var innerNotesProfs="";
+
+        for(var i=0; i<nbProfs; i++){
+            innerNotesProfs += '<tr align="center">';
+                innerNotesProfs += "<td><a href='/prof/"+overallRates[i]["_id"]+"/avis'>"+overallRates[i]["_id"]+"</a></td>";
+                innerNotesProfs += "<td>"+Math.trunc(overallRates[i]["moyenneCours"] * 10) / 10 +"</td>";
+                innerNotesProfs += "<td>"+Math.trunc(overallRates[i]["moyenneProf"] * 10) / 10 +"</td>";
+                innerNotesProfs += "<td>"+Math.trunc(overallRates[i]["moyennePointsMises"] * 10) / 10 +"</td>";
+                innerNotesProfs += "<td>"+overallRates[i]["nbAvis"]+"</td>";
+            innerNotesProfs += "</tr>";
+            document.getElementById("notesProfs").innerHTML += innerNotesProfs;
+            innerNotesProfs="";
+        }
+
+        var pointsColorIndicator = document.getElementById("pointsColorIndicator");
+    if (moyennePointsMises >= 30) {
+        pointsColorIndicator.style.backgroundColor = "red";
+    } else if (moyennePointsMises >= 16) {
+        pointsColorIndicator.style.backgroundColor = "yellow";
+    } else {
+        pointsColorIndicator.style.backgroundColor = "green";
+    }
+        //document.getElementById('loader').innerHTML = "";
+    })
+</script>
